@@ -105,17 +105,27 @@ with st.form("novo_chamado"):
                 st.success(f"✅ Chamado #{chamado_id} criado com sucesso!")
                 st.info(f"📊 Prioridade: {prioridade} | SLA: {'4 horas' if prioridade == 'Alta' else '24 horas' if prioridade == 'Média' else '72 horas'}")
                 
-                # Show navigation options
-                col1, col2 = st.columns(2)
-                with col1:
-                    if st.button("📋 Ver Meus Chamados", use_container_width=True):
-                        st.switch_page("pages/2_meus_chamados.py")
-                with col2:
-                    if st.button("📝 Abrir Outro Chamado", use_container_width=True):
-                        st.rerun()
+                # Store success state to show navigation after form
+                st.session_state['chamado_criado'] = True
+                st.session_state['chamado_id'] = chamado_id
                         
             except Exception as e:
                 st.error(f"❌ Erro ao criar chamado: {str(e)}")
+
+# Show navigation options if ticket was created successfully
+if st.session_state.get('chamado_criado', False):
+    st.markdown("---")
+    st.markdown("### 🎉 Chamado criado com sucesso!")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("📋 Ver Meus Chamados", use_container_width=True):
+            st.session_state['chamado_criado'] = False
+            st.switch_page("pages/2_meus_chamados.py")
+    with col2:
+        if st.button("📝 Abrir Outro Chamado", use_container_width=True):
+            st.session_state['chamado_criado'] = False
+            st.rerun()
 
 # Recent tickets section
 st.markdown("---")
