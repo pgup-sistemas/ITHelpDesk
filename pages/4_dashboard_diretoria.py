@@ -1,7 +1,6 @@
 import streamlit as st
 import sys
 import os
-import pandas as pd
 from datetime import datetime, timedelta
 
 # Add components directory to path
@@ -18,7 +17,7 @@ if not check_authentication():
 current_user = get_current_user()
 
 # Only allow directors and admins
-if current_user['role'] not in ['Diretoria', 'Administrador']:
+if current_user and current_user['role'] not in ['Diretoria', 'Administrador']:
     st.error("❌ Acesso negado. Esta página é apenas para diretoria e administradores.")
     st.stop()
 
@@ -90,18 +89,17 @@ with col1:
     st.markdown("### 📊 Distribuição por Status")
     
     if analytics_data['by_status']:
-        status_df = pd.DataFrame(analytics_data['by_status'], columns=['Status', 'Quantidade'])
+        status_data = analytics_data['by_status']
         
-        fig = px.pie(status_df, values='Quantidade', names='Status',
-                    color_discrete_map={
-                        'Pendente': '#FFA500',
-                        'Em Andamento': '#4169E1', 
-                        'Resolvido': '#32CD32',
-                        'Cancelado': '#DC143C'
-                    })
-        fig.update_traces(textposition='inside', textinfo='percent+label')
-        fig.update_layout(height=400)
-        st.plotly_chart(fig, use_container_width=True)
+        for status, count in status_data:
+            status_icon = {
+                'Pendente': '🟡',
+                'Em Andamento': '🔵', 
+                'Resolvido': '🟢',
+                'Cancelado': '🔴'
+            }.get(status, '⚪')
+            
+            st.markdown(f"{status_icon} **{status}:** {count} chamados")
     else:
         st.info("Nenhum dado disponível")
 
@@ -110,17 +108,16 @@ with col2:
     st.markdown("### ⚡ Distribuição por Prioridade")
     
     if analytics_data['by_priority']:
-        priority_df = pd.DataFrame(analytics_data['by_priority'], columns=['Prioridade', 'Quantidade'])
+        priority_data = analytics_data['by_priority']
         
-        fig = px.pie(priority_df, values='Quantidade', names='Prioridade',
-                    color_discrete_map={
-                        'Alta': '#DC143C',
-                        'Média': '#FFA500',
-                        'Baixa': '#32CD32'
-                    })
-        fig.update_traces(textposition='inside', textinfo='percent+label')
-        fig.update_layout(height=400)
-        st.plotly_chart(fig, use_container_width=True)
+        for priority, count in priority_data:
+            priority_icon = {
+                'Alta': '🔴',
+                'Média': '🟡',
+                'Baixa': '🟢'
+            }.get(priority, '⚪')
+            
+            st.markdown(f"{priority_icon} **{priority}:** {count} chamados")
     else:
         st.info("Nenhum dado disponível")
 
@@ -128,14 +125,11 @@ with col2:
 st.markdown("### 🏢 Chamados por Setor")
 
 if analytics_data['by_sector']:
-    sector_df = pd.DataFrame(analytics_data['by_sector'], columns=['Setor', 'Quantidade'])
-    sector_df = sector_df.sort_values('Quantidade', ascending=True)
+    sector_data = analytics_data['by_sector']
+    sector_data.sort(key=lambda x: x[1], reverse=True)  # Sort by count
     
-    fig = px.bar(sector_df, x='Quantidade', y='Setor', orientation='h',
-                title="Volume de Chamados por Setor",
-                color='Quantidade', color_continuous_scale='viridis')
-    fig.update_layout(height=400)
-    st.plotly_chart(fig, use_container_width=True)
+    for sector, count in sector_data:
+        st.markdown(f"🏢 **{sector}:** {count} chamados")
 else:
     st.info("Nenhum dado disponível")
 
@@ -143,45 +137,22 @@ else:
 st.markdown("### 👨‍💻 Desempenho dos Técnicos")
 
 if analytics_data['technician_performance']:
-    tech_df = pd.DataFrame(analytics_data['technician_performance'], 
-                          columns=['Técnico', 'Chamados_Resolvidos', 'Tempo_Médio_Dias'])
+    tech_data = analytics_data['technician_performance']
     
-    if not tech_df.empty:
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("#### 🎯 Chamados Resolvidos")
-            fig = px.bar(tech_df, x='Técnico', y='Chamados_Resolvidos',
-                        title="Número de Chamados Resolvidos por Técnico")
-            fig.update_layout(height=350)
-            st.plotly_chart(fig, use_container_width=True)
-        
-        with col2:
-            st.markdown("#### ⏱️ Tempo Médio de Resolução")
-            tech_df['Tempo_Médio_Horas'] = tech_df['Tempo_Médio_Dias'] * 24
-            fig = px.bar(tech_df, x='Técnico', y='Tempo_Médio_Horas',
-                        title="Tempo Médio de Resolução (horas)")
-            fig.update_layout(height=350)
-            st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.info("Nenhum chamado resolvido ainda")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("#### 🎯 Chamados Resolvidos")
+        for tech, resolved, avg_days in tech_data:
+            st.markdown(f"👨‍💻 **{tech}:** {resolved} chamados resolvidos")
+    
+    with col2:
+        st.markdown("#### ⏱️ Tempo Médio de Resolução")
+        for tech, resolved, avg_days in tech_data:
+            avg_hours = round(avg_days * 24, 1) if avg_days else 0
+            st.markdown(f"⏱️ **{tech}:** {avg_hours} horas em média")
 else:
     st.info("Nenhum dado de desempenho disponível")
-
-# Chart 5: Tickets Over Time
-st.markdown("### 📈 Evolução dos Chamados (Últimos 30 dias)")
-
-if analytics_data['over_time']:
-    time_df = pd.DataFrame(analytics_data['over_time'], columns=['Data', 'Quantidade'])
-    time_df['Data'] = pd.to_datetime(time_df['Data'])
-    
-    fig = px.line(time_df, x='Data', y='Quantidade',
-                 title="Evolução Diária dos Chamados",
-                 markers=True)
-    fig.update_layout(height=400)
-    st.plotly_chart(fig, use_container_width=True)
-else:
-    st.info("Nenhum dado temporal disponível")
 
 st.markdown("---")
 
@@ -233,20 +204,6 @@ with col2:
 with col3:
     st.metric("🚨 SLA Crítico", sla_critical, delta="< 1 hora")
 
-# SLA Chart
-if total_sla_tickets > 0:
-    sla_data = pd.DataFrame({
-        'Status': ['Cumprido', 'Violado'],
-        'Quantidade': [sla_compliant, sla_violated]
-    })
-    
-    fig = px.pie(sla_data, values='Quantidade', names='Status',
-                title="Cumprimento de SLA",
-                color_discrete_map={'Cumprido': '#32CD32', 'Violado': '#DC143C'})
-    fig.update_traces(textposition='inside', textinfo='percent+label')
-    fig.update_layout(height=300)
-    st.plotly_chart(fig, use_container_width=True)
-
 st.markdown("---")
 
 # === EXPORT SECTION ===
@@ -259,6 +216,7 @@ with col1:
         # Prepare general data for export
         all_tickets = get_chamados()
         if all_tickets:
+            import pandas as pd
             df = pd.DataFrame(all_tickets, columns=[
                 'ID', 'Título', 'Descrição', 'Setor', 'Prioridade', 'Status',
                 'Solicitante', 'Técnico', 'Data_Abertura', 'Data_Resolução', 'SLA_Prazo'
@@ -296,6 +254,7 @@ with col2:
                 ])
         
         if sla_analysis:
+            import pandas as pd
             sla_df = pd.DataFrame(sla_analysis, columns=[
                 'ID', 'Título', 'Prioridade', 'Status', 
                 'Data_Abertura', 'Data_Resolução', 'SLA_Prazo', 'SLA_Status'
@@ -313,6 +272,7 @@ with col3:
     if st.button("👨‍💻 Exportar Desempenho Técnicos", use_container_width=True):
         # Prepare technician performance for export
         if analytics_data['technician_performance']:
+            import pandas as pd
             tech_df = pd.DataFrame(analytics_data['technician_performance'], 
                                   columns=['Técnico', 'Chamados_Resolvidos', 'Tempo_Médio_Dias'])
             
@@ -331,8 +291,6 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.markdown("### 🚨 Alertas Ativos")
-    
-    alerts = []
     
     # Check for overdue tickets
     overdue_count = 0
