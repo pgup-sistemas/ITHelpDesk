@@ -20,7 +20,7 @@ st.set_page_config(page_title="Abrir Chamado", page_icon="📝", layout="wide")
 st.title("📝 Abrir Novo Chamado")
 
 # Only allow certain roles to access this page
-allowed_roles = ['Colaborador', 'Técnico', 'Administrador']
+allowed_roles = ['Colaborador', 'Técnico', 'Administrador', 'Diretoria']
 if current_user['role'] not in allowed_roles:
     st.error("❌ Você não tem permissão para abrir chamados.")
     st.stop()
@@ -34,8 +34,8 @@ with st.form("novo_chamado"):
     with col1:
         titulo = st.text_input("🎫 Título do Chamado *", placeholder="Descreva brevemente o problema")
         setor_origem = st.selectbox("🏢 Setor de Origem *", [
-            "Administrativo", "Financeiro", "Recursos Humanos", "Vendas", 
-            "Marketing", "Produção", "TI", "Diretoria", "Outro"
+            "Administrativo", "Financeiro", "Recursos Humanos", "Médico", "Faturamento", "Comercial", "AlphaclinMais", "Aréa Técnica", "Atendimento Terréo", "Atendimento 1Piso", "Atendimento 2Piso", "Vacinas", 
+            "Marketing", "Suprimentos", "Tomografia", "Ressonância", "Diretoria", "Qualidade", "Telefonia", "Lumina Imagem", "Outro"
         ], index=0 if current_user['setor'] == 'Administrativo' else None)
         
     with col2:
@@ -188,4 +188,4 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("**📞 Contato de Emergência:**")
     st.markdown("📱 (69) 99388-2222")
-    st.markdown("📧 suporte.ti@empresa.com")
+    st.markdown("📧 pageupsistemas@gmail.com")

@@ -28,7 +28,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Initialize database
+# Initialize database and ensure data directory exists
+os.makedirs('data', exist_ok=True)
 init_database()
 
 def main():
