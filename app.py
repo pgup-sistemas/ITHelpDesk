@@ -8,6 +8,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 
 from components.auth import check_authentication, login_page
 from components.database import init_database
+from components.header import display_header
 
 # Configure page
 st.set_page_config(
@@ -30,6 +31,9 @@ def main():
     user_info = st.session_state.get('user_info', {})
     user_role = user_info.get('role', '')
     username = user_info.get('username', '')
+    
+    # Display header
+    display_header()
     
     # Main page content
     st.title("📟 Sistema de Chamados de TI")

@@ -10,6 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'components'))
 from components.auth import check_authentication, get_current_user, require_role
 from components.database import get_chamados, assign_technician, get_tecnicos, update_chamado_status
 from components.chat import display_chat
+from components.header import display_header
 
 # Check authentication
 if not check_authentication():
@@ -24,6 +25,9 @@ if current_user and current_user['role'] not in ['Técnico', 'Administrador', 'D
     st.stop()
 
 st.set_page_config(page_title="Chamados Técnicos", page_icon="🎯", layout="wide")
+
+# Display header
+display_header()
 
 st.title("🎯 Gestão de Chamados - Área Técnica")
 

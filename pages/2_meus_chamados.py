@@ -10,6 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'components'))
 from components.auth import check_authentication, get_current_user
 from components.database import get_chamados, get_chamado_by_id, update_chamado_status
 from components.chat import display_chat
+from components.header import display_header
 
 # Check authentication
 if not check_authentication():
@@ -19,6 +20,9 @@ if not check_authentication():
 current_user = get_current_user()
 
 st.set_page_config(page_title="Meus Chamados", page_icon="📋", layout="wide")
+
+# Display header
+display_header()
 
 st.title("📋 Meus Chamados")
 
