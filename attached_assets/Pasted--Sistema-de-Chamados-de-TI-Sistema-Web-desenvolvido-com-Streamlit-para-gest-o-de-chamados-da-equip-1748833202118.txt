@@ -1,0 +1,243 @@
+📟 Sistema de Chamados de TI
+Sistema Web desenvolvido com Streamlit para gestão de chamados da equipe de TI, promovendo eficiência, rastreabilidade e visibilidade das ações técnicas. Conta com autenticação por setor, painel administrativo detalhado para a diretoria e funcionalidades modernas como SLA e chat interno.
+
+🚀 Funcionalidades Principais
+👥 Autenticação de Usuários
+Login seguro com credenciais controladas pelo administrador.
+
+Perfis de acesso:
+
+Colaborador: abre e acompanha seus próprios chamados.
+
+Técnico de TI: gerencia chamados disponíveis ou atribuídos.
+
+Administrador: cria usuários, visualiza todos os chamados, e atribui técnicos.
+
+Diretoria: acessa dashboards gerenciais e relatórios.
+
+🛠 Abertura e Gestão de Chamados
+Formulário de Abertura
+Preenchimento simples, com data de abertura automática (data do dia).
+
+Campos:
+
+Descrição do problema
+
+Setor de origem
+
+Prioridade (Alta, Média, Baixa)
+
+Observações opcionais
+
+Anexos (imagens, prints etc.)
+
+Fluxo Administrativo
+Colaborador abre um chamado através do portal.
+
+Chamado fica visível para todos os técnicos.
+
+Técnico pode "pegar" o chamado voluntariamente.
+
+Um chamado pode ser atendido por mais de um técnico, permitindo colaboração.
+
+Técnicos ou administradores podem redirecionar o chamado para outro técnico, se necessário.
+
+Técnico atualiza o status durante o atendimento.
+
+Técnico fecha o chamado com observações detalhadas de resolução.
+
+Recursos Extras
+Controle de SLA automático por prioridade.
+
+Filtros por status, setor, prioridade e técnicos.
+
+Histórico de alterações visível no painel.
+
+💬 Chat Interno Integrado
+Comunicação direta entre técnicos e solicitantes dentro do chamado.
+
+Registro histórico de mensagens por chamado.
+
+Suporte a múltiplos técnicos na conversa.
+
+Notificações visuais de mensagens novas.
+
+📊 Dashboard para Diretoria
+Painel gerencial com dados analíticos em tempo real:
+
+Quantidade de chamados por período
+
+Status geral (pendentes, em andamento, resolvidos)
+
+Tempo médio de resolução por prioridade
+
+Cumprimento de SLAs
+
+Técnicos mais atuantes
+
+Setores com mais solicitações
+
+Exportação de relatórios em .csv
+
+Gráficos:
+
+📊 Gráficos Recomendados para o Dashboard
+1. 📋 Resumo Geral (Indicadores / Métricas) – KPIs
+Total de chamados abertos
+
+Total de chamados resolvidos
+
+Chamados pendentes
+
+Tempo médio de resolução (em dias)
+
+Percentual de SLA atendido (%)
+
+Quantidade de técnicos ativos
+
+Streamlit componente: st.metric, st.columns
+
+2. 📈 Gráficos Temporais
+Objetivo: entender a evolução dos chamados no tempo
+
+📅 Chamados por Semana (ou Mês)
+Tipo: Linha ou Barra
+
+Eixo X: Semana ou mês
+
+Eixo Y: Quantidade de chamados
+
+plotly.express.line() ou px.bar()
+
+⏱ Tempo médio de resolução por período
+Tipo: Linha
+
+Compara a evolução do tempo médio de resolução
+
+Útil para verificar melhora da equipe
+
+3. 📊 Gráficos por Prioridade
+🎯 Distribuição de chamados por prioridade
+Tipo: Gráfico de Pizza ou Rosca
+
+Alta / Média / Baixa
+
+plotly.express.pie() ou go.Figure(donut)
+
+📉 SLA por prioridade
+Tipo: Gráfico de Barras Horizontais
+
+Mostra % de cumprimento do SLA para cada prioridade
+
+4. 🧑‍💻 Gráficos por Técnico
+🛠 Técnicos mais atuantes
+Tipo: Barra Horizontal
+
+Eixo X: Nome do técnico
+
+Eixo Y: Número de chamados resolvidos
+
+⏳ Tempo médio de resolução por técnico
+Tipo: Barra
+
+Avalia eficiência individual
+
+📦 Chamados simultâneos por técnico
+Tipo: Stacked Bar
+
+Mostra número de chamados em aberto por técnico
+
+5. 🏢 Gráficos por Setor
+🔧 Setores com mais chamados
+Tipo: Barra Vertical
+
+Mostra volume de chamados por setor solicitante
+
+📊 Tipos de problema por setor (se categorizado)
+Tipo: Gráfico de Pizza ou Heatmap
+
+Requer categorização dos tipos de problemas
+
+6. 📍 Gráfico de Status Atual
+🟢🔴🟡 Status dos Chamados
+Tipo: Gráfico de Pizza
+
+Pendente / Em andamento / Concluído
+
+🧮 Filtros por Técnico, Setor e Prioridade
+Tipo: Tabela Interativa com filtros
+
+Usar st.dataframe com AgGrid opcional
+
+✅ Extras e Ferramentas para Visualização
+Plotly Express: para gráficos interativos
+
+Altair: se quiser uma abordagem declarativa e limpa
+
+Matplotlib/Seaborn: para gráficos estatísticos tradicionais
+
+AgGrid: para exibir tabelas interativas com filtros, ordenação, e agrupamentos
+
+
+
+🧰 Tecnologias Utilizadas
+Streamlit – Interface web leve e moderna
+
+Pandas – Manipulação de dados
+
+Plotly / Matplotlib – Visualizações interativas
+
+SQLite – Banco de dados local (ou expansível para PostgreSQL)
+
+Streamlit-Auth-Component – Autenticação de usuários
+
+WebSockets / Streamlit-Chat – Para mensagens em tempo real
+
+📦 Estrutura do Projeto
+bash
+Copiar
+Editar
+sistema-chamados-ti/
+├── app.py                         # App principal Streamlit
+├── data/
+│   └── chamados.db                # Banco de dados SQLite
+├── pages/
+│   ├── abrir_chamado.py
+│   ├── meus_chamados.py
+│   ├── chamados_tecnicos.py
+│   ├── dashboard_diretoria.py
+│   └── admin_usuarios.py
+├── components/
+│   ├── auth.py                    # Lógica de autenticação
+│   └── chat.py                    # Módulo de chat interno
+├── requirements.txt
+└── README.md
+▶️ Executando o Projeto
+bash
+Copiar
+Editar
+# 1. Clone o repositório
+git clone https://github.com/seu-usuario/sistema-chamados-ti.git
+cd sistema-chamados-ti
+
+# 2. Crie o ambiente virtual
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# 3. Instale as dependências
+pip install -r requirements.txt
+
+# 4. Execute o app
+streamlit run app.py
+
+🔐 Perfis e Permissões
+Perfil	Acesso
+Colaborador	Abre e acompanha seus chamados
+Técnico TI	Visualiza chamados abertos, “pega” chamados, responde chats
+Admin	Cria/edita usuários, redireciona chamados, acessa tudo
+Diretoria	Painel de KPIs e exportações
+
+📞 Suporte
+PgUp Sistemas
+📧 pageupsistemas@gmail.com
+📱 (69) 99388-2222
