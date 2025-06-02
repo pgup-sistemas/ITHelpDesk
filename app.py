@@ -1,6 +1,16 @@
 import streamlit as st
 import sys
 import os
+import locale
+
+# Configurar locale brasileiro
+try:
+    locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+except:
+    try:
+        locale.setlocale(locale.LC_TIME, 'Portuguese_Brazil.1252')
+    except:
+        pass  # Mantém o padrão se não conseguir configurar
 
 # Add components directory to path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'components'))

@@ -2,11 +2,26 @@ import streamlit as st
 from datetime import datetime, timedelta
 import sqlite3
 import pandas as pd
+import pytz
+
+# Configuração do timezone brasileiro - Porto Velho, Rondônia
+BRAZIL_TZ = pytz.timezone('America/Porto_Velho')
+
+def get_current_time():
+    """Retorna o horário atual no timezone de Porto Velho, RO"""
+    return datetime.now(BRAZIL_TZ)
+
+def get_current_time_str():
+    """Retorna o horário atual como string formatada para o banco"""
+    return get_current_time().strftime('%Y-%m-%d %H:%M:%S')
 
 def format_datetime(dt_string, format_type="display"):
-    """Format datetime string for display or calculations"""
+    """Format datetime string for display or calculations with Brazil timezone"""
     try:
+        # Parse datetime assuming it's in UTC and convert to Brazil timezone
         dt = datetime.strptime(dt_string, '%Y-%m-%d %H:%M:%S')
+        dt = pytz.UTC.localize(dt).astimezone(BRAZIL_TZ)
+        
         if format_type == "display":
             return dt.strftime('%d/%m/%Y às %H:%M')
         elif format_type == "date_only":
@@ -22,7 +37,9 @@ def calculate_time_difference(start_time, end_time):
     """Calculate time difference between two datetime strings"""
     try:
         start = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
+        start = pytz.UTC.localize(start).astimezone(BRAZIL_TZ)
         end = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
+        end = pytz.UTC.localize(end).astimezone(BRAZIL_TZ)
         diff = end - start
         
         days = diff.days
@@ -45,7 +62,8 @@ def get_sla_status(sla_deadline, current_status):
     
     try:
         deadline = datetime.strptime(sla_deadline, '%Y-%m-%d %H:%M:%S')
-        now = datetime.now()
+        deadline = pytz.UTC.localize(deadline).astimezone(BRAZIL_TZ)
+        now = get_current_time()
         time_diff = (deadline - now).total_seconds()
         
         if time_diff < 0:
@@ -106,7 +124,7 @@ def generate_ticket_summary(ticket_data):
         'status': get_status_info(status),
         'sla': get_sla_status(sla_prazo, status),
         'duration': calculate_time_difference(data_abertura, data_resolucao) if data_resolucao else None,
-        'open_duration': calculate_time_difference(data_abertura, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        'open_duration': calculate_time_difference(data_abertura, get_current_time_str())
     }
     
     return summary
@@ -191,7 +209,9 @@ def generate_dashboard_metrics(tickets_data):
         if ticket[5] == 'Resolvido' and ticket[8] and ticket[9]:  # Has open and resolution dates
             try:
                 open_date = datetime.strptime(ticket[8], '%Y-%m-%d %H:%M:%S')
+                open_date = pytz.UTC.localize(open_date).astimezone(BRAZIL_TZ)
                 resolve_date = datetime.strptime(ticket[9], '%Y-%m-%d %H:%M:%S')
+                resolve_date = pytz.UTC.localize(resolve_date).astimezone(BRAZIL_TZ)
                 resolution_time = (resolve_date - open_date).total_seconds() / 3600  # hours
                 resolution_times.append(resolution_time)
                 
@@ -303,11 +323,11 @@ def check_system_health():
             'status': 'healthy',
             'users': users_count,
             'tickets': tickets_count,
-            'timestamp': datetime.now()
+            'timestamp': get_current_time()
         }
     except Exception as e:
         return {
             'status': 'error',
             'error': str(e),
-            'timestamp': datetime.now()
+            'timestamp': get_current_time()
         }

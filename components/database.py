@@ -2,6 +2,16 @@ import sqlite3
 import os
 from datetime import datetime, timedelta
 import hashlib
+import pytz
+
+# Helper function to get current time in 'America/Porto_Velho' timezone
+def get_current_time():
+    timezone = pytz.timezone('America/Porto_Velho')
+    return datetime.now(timezone)
+
+# Helper function to get current time as string in 'America/Porto_Velho' timezone
+def get_current_time_str():
+    return get_current_time().strftime('%Y-%m-%d %H:%M:%S')
 
 def hash_password(password):
     """Hash a password using SHA-256"""
@@ -106,13 +116,15 @@ def init_database():
 
 def calculate_sla_deadline(prioridade):
     """Calculate SLA deadline based on priority"""
-    now = datetime.now()
     if prioridade == 'Alta':
-        return now + timedelta(hours=4)  # 4 hours
+        sla_hours = 4
     elif prioridade == 'Média':
-        return now + timedelta(hours=24)  # 24 hours
+        sla_hours = 24
     else:  # Baixa
-        return now + timedelta(hours=72)  # 72 hours
+        sla_hours = 72
+    
+    sla_prazo = get_current_time() + timedelta(hours=sla_hours)
+    return sla_prazo
 
 def create_chamado(titulo, descricao, setor_origem, prioridade, solicitante_id, solicitante_nome, observacoes=None):
     """Create a new ticket"""
@@ -120,11 +132,12 @@ def create_chamado(titulo, descricao, setor_origem, prioridade, solicitante_id, 
     cursor = conn.cursor()
 
     sla_prazo = calculate_sla_deadline(prioridade)
+    data_abertura = get_current_time_str()
 
     cursor.execute("""
-        INSERT INTO chamados (titulo, descricao, setor_origem, prioridade, solicitante_id, solicitante_nome, observacoes, sla_prazo)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (titulo, descricao, setor_origem, prioridade, solicitante_id, solicitante_nome, observacoes, sla_prazo))
+        INSERT INTO chamados (titulo, descricao, setor_origem, prioridade, solicitante_id, solicitante_nome, observacoes, sla_prazo, data_abertura)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (titulo, descricao, setor_origem, prioridade, solicitante_id, solicitante_nome, observacoes, sla_prazo, data_abertura))
 
     chamado_id = cursor.lastrowid
 
@@ -201,7 +214,7 @@ def update_chamado_status(chamado_id, new_status, user_id, user_name, detalhes=N
 
     if new_status == 'Resolvido':
         update_fields.append("data_resolucao = ?")
-        params.append(datetime.now())
+        params.append(get_current_time_str())
 
     params.append(chamado_id)
 
@@ -229,7 +242,7 @@ def assign_technician(chamado_id, tecnico_id, tecnico_nome, user_id, user_name):
         UPDATE chamados 
         SET tecnico_id = ?, tecnico_nome = ?, data_atribuicao = ?, status = 'Em Andamento'
         WHERE id = ?
-    """, (tecnico_id, tecnico_nome, datetime.now(), chamado_id))
+    """, (tecnico_id, tecnico_nome, get_current_time_str(), chamado_id))
 
     # Add to history
     cursor.execute("""
@@ -383,6 +396,21 @@ def save_feedback(user_id, feedback_text):
         INSERT INTO feedback (user_id, feedback_text)
         VALUES (?, ?)
     """, (user_id, feedback_text))
+
+    conn.commit()
+    conn.close()
+
+def add_message(chamado_id, user_id, username, mensagem):
+    """Add a chat message to the database."""
+    conn = sqlite3.connect('data/chamados.db')
+    cursor = conn.cursor()
+
+    timestamp = get_current_time_str()
+
+    cursor.execute("""
+        INSERT INTO chat_messages (chamado_id, usuario_id, username, mensagem, data_criacao)
+        VALUES (?, ?, ?, ?, ?)
+    """, (chamado_id, user_id, username, mensagem, timestamp))
 
     conn.commit()
     conn.close()
