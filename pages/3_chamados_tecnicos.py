@@ -39,15 +39,15 @@ tab1, tab2, tab3 = st.tabs(["🎫 Todos os Chamados", "⏳ Pendentes", "🔧 Em 
 
 with tab1:
     st.markdown("### 📊 Visão Geral dos Chamados")
-    
+
     # Quick stats
     col1, col2, col3, col4 = st.columns(4)
-    
+
     total = len(all_tickets)
     pendentes = len([t for t in all_tickets if t[5] == 'Pendente'])
     em_andamento = len([t for t in all_tickets if t[5] == 'Em Andamento'])
     resolvidos = len([t for t in all_tickets if t[5] == 'Resolvido'])
-    
+
     with col1:
         st.metric("Total", total)
     with col2:
@@ -56,10 +56,10 @@ with tab1:
         st.metric("Em Andamento", em_andamento)
     with col4:
         st.metric("Resolvidos", resolvidos)
-    
+
     # Filters
     col1, col2, col3, col4 = st.columns(4)
-    
+
     with col1:
         status_filter = st.selectbox("📊 Status", ["Todos", "Pendente", "Em Andamento", "Resolvido", "Cancelado"])
     with col2:
@@ -71,7 +71,7 @@ with tab1:
         tecnicos = get_tecnicos()
         tecnico_names = ["Todos"] + [f"{t[2]}" for t in tecnicos]
         technician_filter = st.selectbox("👨‍💻 Técnico", tecnico_names)
-    
+
     # Apply filters
     filtered_tickets = all_tickets
     if status_filter != "Todos":
@@ -82,12 +82,12 @@ with tab1:
         filtered_tickets = [t for t in filtered_tickets if t[3] == sector_filter]
     if technician_filter != "Todos":
         filtered_tickets = [t for t in filtered_tickets if t[7] == technician_filter]
-    
+
     # Display filtered tickets
     if filtered_tickets:
         for ticket in filtered_tickets:
             ticket_id, titulo, descricao, setor, prioridade, status, solicitante, tecnico, data_abertura, data_resolucao, sla_prazo = ticket
-            
+
             # Status and priority indicators
             status_colors = {
                 'Pendente': '🟡',
@@ -95,16 +95,16 @@ with tab1:
                 'Resolvido': '🟢',
                 'Cancelado': '🔴'
             }
-            
+
             priority_colors = {
                 'Alta': '🔴',
                 'Média': '🟡',
                 'Baixa': '🟢'
             }
-            
+
             with st.container():
                 col1, col2, col3, col4 = st.columns([1, 4, 1, 1])
-                
+
                 with col1:
                     st.markdown(f"**#{ticket_id}**")
                 with col2:
@@ -113,49 +113,49 @@ with tab1:
                     st.markdown(f"{priority_colors.get(prioridade, '⚪')} {prioridade}")
                 with col4:
                     st.markdown(f"{status_colors.get(status, '⚪')} {status}")
-                
+
                 with st.expander(f"Ver detalhes do chamado #{ticket_id}"):
                     col1, col2 = st.columns([2, 1])
-                    
+
                     with col1:
                         st.markdown(f"**📄 Descrição:** {descricao}")
                         st.markdown(f"**🏢 Setor:** {setor}")
                         st.markdown(f"**👤 Solicitante:** {solicitante}")
                         if tecnico:
                             st.markdown(f"**🔧 Técnico:** {tecnico}")
-                    
+
                     with col2:
                         st.markdown(f"**📅 Abertura:** {data_abertura}")
                         if data_resolucao:
                             st.markdown(f"**✅ Resolução:** {data_resolucao}")
-                
+
                 st.markdown("---")
     else:
         st.info("📭 Nenhum chamado encontrado.")
 
 with tab2:
     st.markdown("### ⏳ Chamados Pendentes de Atribuição")
-    
+
     pending_tickets = [t for t in all_tickets if t[5] == 'Pendente']
-    
+
     if pending_tickets:
         st.info(f"📋 {len(pending_tickets)} chamado(s) aguardando atribuição de técnico.")
-        
+
         # Sort by priority and date
         pending_tickets.sort(key=lambda x: (
             {'Alta': 0, 'Média': 1, 'Baixa': 2}.get(x[4], 3),  # Priority
             x[8]  # Date
         ))
-        
+
         # Display pending tickets
         for ticket in pending_tickets:
             ticket_id, titulo, descricao, setor, prioridade, status, solicitante, tecnico, data_abertura, data_resolucao, sla_prazo = ticket
-            
+
             priority_colors = {'Alta': '🔴', 'Média': '🟡', 'Baixa': '🟢'}
-            
+
             with st.container():
                 col1, col2, col3 = st.columns([1, 4, 1])
-                
+
                 with col1:
                     st.markdown(f"**#{ticket_id}**")
                 with col2:
@@ -167,34 +167,34 @@ with tab2:
                                            current_user['id'], current_user['username'])
                             st.success("Chamado assumido!")
                             st.rerun()
-                
+
                 with st.expander(f"Detalhes #{ticket_id}"):
                     st.markdown(f"**📄 Descrição:** {descricao}")
                     st.markdown(f"**🏢 Setor:** {setor}")
                     st.markdown(f"**👤 Solicitante:** {solicitante}")
                     st.markdown(f"**📅 Abertura:** {data_abertura}")
-                
+
                 st.markdown("---")
     else:
         st.success("🎉 Todos os chamados foram atribuídos!")
 
 with tab3:
     st.markdown("### 🔧 Chamados Em Andamento")
-    
+
     in_progress_tickets = [t for t in all_tickets if t[5] == 'Em Andamento']
-    
+
     if in_progress_tickets:
         st.info(f"⚙️ {len(in_progress_tickets)} chamado(s) em atendimento.")
-        
+
         # Display in progress tickets
         for ticket in in_progress_tickets:
             ticket_id, titulo, descricao, setor, prioridade, status, solicitante, tecnico, data_abertura, data_resolucao, sla_prazo = ticket
-            
+
             priority_colors = {'Alta': '🔴', 'Média': '🟡', 'Baixa': '🟢'}
-            
+
             with st.container():
                 col1, col2, col3 = st.columns([1, 4, 1])
-                
+
                 with col1:
                     st.markdown(f"**#{ticket_id}**")
                 with col2:
@@ -204,20 +204,20 @@ with tab3:
                         if st.button(f"✅ Resolver", key=f"resolve_progress_{ticket_id}"):
                             st.session_state[f'resolving_{ticket_id}'] = True
                             st.rerun()
-                
+
                 with st.expander(f"Detalhes #{ticket_id}"):
                     st.markdown(f"**📄 Descrição:** {descricao}")
                     st.markdown(f"**🏢 Setor:** {setor}")
                     st.markdown(f"**👤 Solicitante:** {solicitante}")
                     st.markdown(f"**🔧 Técnico:** {tecnico}")
                     st.markdown(f"**📅 Abertura:** {data_abertura}")
-                    
+
                     # Resolution form
                     if st.session_state.get(f'resolving_{ticket_id}', False):
                         with st.form(f"resolve_form_{ticket_id}"):
                             st.markdown("### ✅ Resolver Chamado")
                             resolution = st.text_area("Descreva a solução aplicada:", height=100)
-                            
+
                             col1, col2 = st.columns(2)
                             with col1:
                                 if st.form_submit_button("✅ Confirmar Resolução"):
@@ -231,7 +231,7 @@ with tab3:
                                 if st.form_submit_button("❌ Cancelar"):
                                     del st.session_state[f'resolving_{ticket_id}']
                                     st.rerun()
-                
+
                 st.markdown("---")
     else:
         st.info("📭 Nenhum chamado em andamento no momento.")
@@ -239,23 +239,32 @@ with tab3:
 # Sidebar with quick actions
 with st.sidebar:
     st.markdown("### 🚀 Ações Rápidas")
-    
+
     if current_user and current_user['role'] == 'Administrador':
         if st.button("👥 Gerenciar Usuários", use_container_width=True):
             st.switch_page("pages/5_admin_usuarios.py")
-        
+
         if st.button("📊 Dashboard", use_container_width=True):
             st.switch_page("pages/4_dashboard_diretoria.py")
-    
+
     if st.button("📋 Meus Chamados", use_container_width=True):
         st.switch_page("pages/2_meus_chamados.py")
-    
+
     st.markdown("---")
     st.markdown("### 📈 Estatísticas Rápidas")
-    
+
     # Quick stats for current user
     if current_user and current_user['role'] == 'Técnico':
         my_tickets = [t for t in all_tickets if t[7] == current_user['username']]
         st.metric("Meus Chamados", len(my_tickets))
         st.metric("Em Andamento", len([t for t in my_tickets if t[5] == 'Em Andamento']))
         st.metric("Resolvidos", len([t for t in my_tickets if t[5] == 'Resolvido']))
+
+    # Informações básicas no final do sidebar
+    st.markdown("---")
+    st.markdown("""
+    <div style="font-size: 10px; color: #888; text-align: center;">
+    <p>v1.0.3</p>
+    <p><a href="https://github.com/pgup-sistemas" target="_blank" style="color: #888;">PgUp Sistemas</a></p>
+    </div>
+    """, unsafe_allow_html=True)

@@ -106,6 +106,15 @@ def main():
             for key in list(st.session_state.keys()):
                 del st.session_state[key]
             st.rerun()
+        
+        # Informações básicas no final do sidebar
+        st.markdown("---")
+        st.markdown("""
+        <div style="font-size: 10px; color: #888; text-align: center;">
+        <p>v1.0.3</p>
+        <p><a href="https://github.com/pgup-sistemas" target="_blank" style="color: #888;">PgUp Sistemas</a></p>
+        </div>
+        """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()

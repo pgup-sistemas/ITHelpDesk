@@ -9,7 +9,7 @@ import pandas as pd
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'components'))
 
 from components.auth import check_authentication, get_current_user
-from components.database import get_usuarios, create_user, update_user, delete_user
+from components.database import get_usuarios
 from components.header import display_header
 
 # Check authentication
@@ -382,6 +382,15 @@ with st.sidebar:
 
         for role, count in roles.items():
             st.metric(role, count)
+    
+    # Informações básicas no final do sidebar
+    st.markdown("---")
+    st.markdown("""
+    <div style="font-size: 10px; color: #888; text-align: center;">
+    <p>v1.0.3</p>
+    <p><a href="https://github.com/pgup-sistemas" target="_blank" style="color: #888;">PgUp Sistemas</a></p>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("---")
     st.markdown("### ⚠️ Dicas de Segurança")

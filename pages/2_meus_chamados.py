@@ -67,12 +67,12 @@ if sector_filter != "Todos":
 # Statistics
 if filtered_tickets:
     col1, col2, col3, col4 = st.columns(4)
-    
+
     total = len(filtered_tickets)
     pendentes = len([t for t in filtered_tickets if t[5] == 'Pendente'])
     em_andamento = len([t for t in filtered_tickets if t[5] == 'Em Andamento'])
     resolvidos = len([t for t in filtered_tickets if t[5] == 'Resolvido'])
-    
+
     with col1:
         st.metric("Total", total)
     with col2:
@@ -88,7 +88,7 @@ st.markdown("---")
 if filtered_tickets:
     for ticket in filtered_tickets:
         ticket_id, titulo, descricao, setor, prioridade, status, solicitante, tecnico, data_abertura, data_resolucao, sla_prazo = ticket
-        
+
         # Status and priority colors
         status_colors = {
             'Pendente': '🟡',
@@ -96,13 +96,13 @@ if filtered_tickets:
             'Resolvido': '🟢',
             'Cancelado': '🔴'
         }
-        
+
         priority_colors = {
             'Alta': '🔴',
             'Média': '🟡',
             'Baixa': '🟢'
         }
-        
+
         # Calculate SLA status
         sla_status = "⏰ Dentro do Prazo"
         if sla_prazo:
@@ -115,13 +115,13 @@ if filtered_tickets:
                     sla_status = "🚨 SLA Próximo do Vencimento"
             except:
                 pass
-        
+
         # Ticket card
         with st.expander(f"🎫 #{ticket_id} - {titulo} | {status_colors.get(status, '⚪')} {status} | {priority_colors.get(prioridade, '⚪')} {prioridade}"):
-            
+
             # Ticket details
             col1, col2 = st.columns([2, 1])
-            
+
             with col1:
                 st.markdown(f"**📄 Descrição:** {descricao}")
                 st.markdown(f"**🏢 Setor:** {setor}")
@@ -130,17 +130,17 @@ if filtered_tickets:
                     st.markdown(f"**🔧 Técnico:** {tecnico}")
                 else:
                     st.markdown("**🔧 Técnico:** Não atribuído")
-            
+
             with col2:
                 st.markdown(f"**📅 Abertura:** {data_abertura}")
                 if data_resolucao:
                     st.markdown(f"**✅ Resolução:** {data_resolucao}")
                 st.markdown(f"**⏱️ SLA:** {sla_status}")
-            
+
             # Action buttons for technicians and admins
             if current_user['role'] in ['Técnico', 'Administrador'] and status != 'Resolvido':
                 col1, col2, col3 = st.columns(3)
-                
+
                 with col1:
                     if status == 'Pendente' and st.button(f"👋 Assumir Chamado #{ticket_id}", key=f"assume_{ticket_id}"):
                         from components.database import assign_technician
@@ -148,23 +148,23 @@ if filtered_tickets:
                                         current_user['id'], current_user['username'])
                         st.success("Chamado assumido com sucesso!")
                         st.rerun()
-                
+
                 with col2:
                     if status == 'Em Andamento' and st.button(f"✅ Resolver #{ticket_id}", key=f"resolve_{ticket_id}"):
                         st.session_state[f'resolving_{ticket_id}'] = True
                         st.rerun()
-                
+
                 with col3:
                     if st.button(f"📝 Atualizar #{ticket_id}", key=f"update_{ticket_id}"):
                         st.session_state[f'updating_{ticket_id}'] = True
                         st.rerun()
-                
+
                 # Resolution form
                 if st.session_state.get(f'resolving_{ticket_id}', False):
                     with st.form(f"resolve_form_{ticket_id}"):
                         st.markdown("### ✅ Resolver Chamado")
                         resolution = st.text_area("Descreva a solução aplicada:", height=100)
-                        
+
                         col1, col2 = st.columns(2)
                         with col1:
                             if st.form_submit_button("✅ Confirmar Resolução"):
@@ -177,14 +177,14 @@ if filtered_tickets:
                             if st.form_submit_button("❌ Cancelar"):
                                 del st.session_state[f'resolving_{ticket_id}']
                                 st.rerun()
-                
+
                 # Update form
                 if st.session_state.get(f'updating_{ticket_id}', False):
                     with st.form(f"update_form_{ticket_id}"):
                         st.markdown("### 📝 Atualizar Status")
                         new_status = st.selectbox("Novo Status:", ['Em Andamento', 'Pendente'])
                         update_notes = st.text_area("Observações:", height=80)
-                        
+
                         col1, col2 = st.columns(2)
                         with col1:
                             if st.form_submit_button("💾 Salvar Atualização"):
@@ -197,14 +197,14 @@ if filtered_tickets:
                             if st.form_submit_button("❌ Cancelar"):
                                 del st.session_state[f'updating_{ticket_id}']
                                 st.rerun()
-            
+
             # Chat section
             st.markdown("---")
             display_chat(ticket_id, current_user)
 
 else:
     st.info("📭 Nenhum chamado encontrado com os filtros aplicados.")
-    
+
     if current_user['role'] in ['Colaborador']:
         col1, col2 = st.columns(2)
         with col1:
@@ -214,23 +214,23 @@ else:
 # Quick navigation
 with st.sidebar:
     st.markdown("### 🧭 Navegação Rápida")
-    
+
     if current_user['role'] in ['Colaborador', 'Técnico', 'Administrador']:
         if st.button("📝 Abrir Novo Chamado", use_container_width=True):
             st.switch_page("pages/1_abrir_chamado.py")
-    
+
     if current_user['role'] in ['Técnico', 'Administrador']:
         if st.button("🎯 Chamados Técnicos", use_container_width=True):
             st.switch_page("pages/3_chamados_tecnicos.py")
-    
+
     if current_user['role'] in ['Administrador']:
         if st.button("👥 Gerenciar Usuários", use_container_width=True):
             st.switch_page("pages/5_admin_usuarios.py")
-    
+
     if current_user['role'] in ['Diretoria', 'Administrador']:
         if st.button("📊 Dashboard", use_container_width=True):
             st.switch_page("pages/4_dashboard_diretoria.py")
-    
+
     st.markdown("---")
     st.markdown("### 📊 Resumo Rápido")
     quick_stats = {
@@ -239,6 +239,15 @@ with st.sidebar:
         'Em Andamento': len([t for t in user_tickets if t[5] == 'Em Andamento']),
         'Resolvidos': len([t for t in user_tickets if t[5] == 'Resolvido'])
     }
-    
-    for label, value in quick_stats.items():
-        st.metric(label, value)
+
+    for status, count in quick_stats.items():
+        st.metric(status, count)
+
+    # Informações básicas no final do sidebar
+    st.markdown("---")
+    st.markdown("""
+    <div style="font-size: 10px; color: #888; text-align: center;">
+    <p>v1.0.3</p>
+    <p><a href="https://github.com/pgup-sistemas" target="_blank" style="color: #888;">PgUp Sistemas</a></p>
+    </div>
+    """, unsafe_allow_html=True)
